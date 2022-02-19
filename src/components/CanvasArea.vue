@@ -1,11 +1,21 @@
 <template>
   <div>
-    <canvas id="tutorial" width="1500" height="1500"></canvas>
+    <canvas id="tutorial" width="1500" height="1500" @click="getPosition"></canvas>
   </div>
 </template>
 <script setup lang="ts">
 import { onMounted } from 'vue'
 
+const getPosition = (e: MouseEvent) => {
+  console.log(e.clientX)
+  console.log(e.clientY)
+  const full = document.getElementById('tutorial') as HTMLCanvasElement
+  const ctx = full.getContext('2d') as CanvasRenderingContext2D
+
+  ctx.moveTo(e.clientX, e.clientY)
+  ctx.fillStyle = "rgb(255,255,0)"
+  ctx.fillRect(e.clientX, e.clientY, 50, 50)
+}
 
 onMounted(() => {
   const full = document.getElementById('tutorial') as HTMLCanvasElement
