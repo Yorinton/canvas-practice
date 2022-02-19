@@ -16,6 +16,16 @@ onMounted(() => {
   ctx.fillRect(30, 30, 50, 50)
   ctx.clearRect(35, 35, 30, 30)
   ctx.strokeRect(37, 37, 25, 25)
+
+  ctx.fillStyle = "rgba(200,0,0, 0.5)"
+  ctx.strokeStyle = "rgba(1, 155, 155)"
+  ctx.beginPath()
+  ctx.moveTo(75, 50)
+  ctx.lineTo(100, 75)
+  ctx.lineTo(100, 25)
+  ctx.closePath()
+  ctx.stroke()
+  ctx.fill()
 })
 
 
