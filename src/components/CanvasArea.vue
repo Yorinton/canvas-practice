@@ -30,6 +30,8 @@ onMounted(() => {
   ctx.beginPath()
   ctx.arc(100, 100, 50, 0, Math.PI * 2, true)
   ctx.moveTo(135, 100) // 始点を移動する
+  // 中心の位置(x, y)、半径(radius)、start/endAngle(開始/終了点のx軸からの正方向のラジアン角度), anticlockwise(反時計回りか)
+  // radians = (Math.PI/180)*degrees
   ctx.arc(100, 100, 35, 0, Math.PI, false)
   ctx.moveTo(90, 90)
   ctx.arc(85, 90, 5, 0, Math.PI * 2, true)
