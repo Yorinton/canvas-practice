@@ -1,6 +1,6 @@
 <template>
   <div ref="parent">
-    <canvas ref="canvas" id="tutorial" @click="putRect"></canvas>
+    <canvas ref="canvas" id="tutorial" @click.stop="putRect" @dblclick.stop="addInput"></canvas>
   </div>
 </template>
 <script setup lang="ts">
@@ -29,6 +29,16 @@ const putRect = (e: MouseEvent) => {
   ctx.fillStyle = "rgb(255,255,0)"
   ctx.fillRect(e.clientX, e.clientY, 200, 200)
 }
+
+const addInput = (e: MouseEvent) => {
+  const input = document.createElement('input')
+  input.id = 'input'
+  input.style.top = e.clientY + 'px'
+  input.style.left = e.clientX + 'px'
+  input.style.position = 'absolute'
+  document.body.appendChild(input)
+}
+
 
 onMounted(() => {
   resizeCanvas()
