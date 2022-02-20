@@ -1,23 +1,41 @@
 <template>
-  <div>
-    <canvas id="tutorial" width="1500" height="1500" @click="getPosition"></canvas>
+  <div ref="parent">
+    <canvas ref="canvas" id="tutorial" @click="putRect"></canvas>
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, Ref, ref } from 'vue'
 
-const getPosition = (e: MouseEvent) => {
-  console.log(e.clientX)
-  console.log(e.clientY)
+/**
+ * 画面全体のcanvasを生成
+ */
+const parent = ref() as Ref<HTMLDivElement>
+const canvas = ref() as Ref<HTMLCanvasElement>
+window.addEventListener('resize', () => {
+  resizeCanvas()
+  initCanvasContent()
+})
+
+const resizeCanvas = () => {
+  canvas.value.style.width = window.innerWidth + 'px'
+  canvas.value.style.height = window.innerHeight + 'px'
+  canvas.value.width = window.innerWidth * window.devicePixelRatio
+  canvas.value.height = window.innerHeight * window.devicePixelRatio
+}
+
+const putRect = (e: MouseEvent) => {
   const full = document.getElementById('tutorial') as HTMLCanvasElement
   const ctx = full.getContext('2d') as CanvasRenderingContext2D
-
-  ctx.moveTo(e.clientX, e.clientY)
   ctx.fillStyle = "rgb(255,255,0)"
-  ctx.fillRect(e.clientX, e.clientY, 50, 50)
+  ctx.fillRect(e.clientX, e.clientY, 200, 200)
 }
 
 onMounted(() => {
+  resizeCanvas()
+  initCanvasContent()
+})
+
+const initCanvasContent = () => {
   const full = document.getElementById('tutorial') as HTMLCanvasElement
   const ctx = full.getContext('2d') as CanvasRenderingContext2D
   ctx.fillStyle = "rgb(200,0,0)"
@@ -48,8 +66,7 @@ onMounted(() => {
   ctx.moveTo(120, 90)
   ctx.arc(115, 90, 5, 0, Math.PI * 2, true)
   ctx.stroke()
-})
-
+}
 
 </script>
 
