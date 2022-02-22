@@ -1,6 +1,6 @@
 <template>
   <div ref="parent">
-    <canvas ref="canvas" id="tutorial" @dblclick.stop="addInput" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp"></canvas>
+    <canvas ref="canvas" id="tutorial" @dblclick.stop="addInput" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @keydown="onKeyDown" tabindex="0" @click="onClick"></canvas>
   </div>
 </template>
 <script setup lang="ts">
@@ -45,6 +45,7 @@ const dragging = ref(false)
 const relX = ref(0)
 const relY = ref(0)
 const ctx = ref() as Ref<CanvasRenderingContext2D>
+const lastClick = ref({x: 0, y: 0})
 
 const initCanvasContent = () => {
   const full = document.getElementById('tutorial') as HTMLCanvasElement
@@ -58,7 +59,7 @@ const initCanvasContent = () => {
   ctx.value.shadowColor = "rgb(0,0,0,0.2)"
   ctx.value.shadowOffsetX = 3
   ctx.value.shadowOffsetY = 3
-  ctx.value.shadowBlur = 10
+  ctx.value.shadowBlur = 3
   ctx.value.fillRect(rectX.value, rectY.value, rectWidth.value, rectHeight.value)
 }
 
@@ -92,11 +93,38 @@ const onMouseMove = (e: MouseEvent) => {
 
   if(dragging.value) {
     // 付箋をドラッグ
+    const rectXBefore = rectX.value
+    const rectYBefore = rectY.value
     rectX.value = x + relX.value
     rectY.value = y + relY.value
-    ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height); 
+
+    ctx.value.clearRect(rectXBefore, rectYBefore - 1, rectWidth.value + 10, rectHeight.value + 10);
     ctx.value.fillRect(rectX.value, rectY.value, rectWidth.value, rectHeight.value)
   }
+}
+
+const imgData = ref() as Ref<ImageData>
+const onKeyDown = async (e: KeyboardEvent) => {
+  if (e.metaKey && e.key === 'c') {
+    imgData.value = ctx.value.getImageData(rectX.value, rectY.value, rectWidth.value + 3, rectHeight.value + 3);
+  }
+  if (e.metaKey && e.key === 'v') {
+    if (lastClick.value.x > 0 || lastClick.value.y > 0) {
+      ctx.value.putImageData(imgData.value, lastClick.value.x, lastClick.value.y)
+    } else {
+      ctx.value.putImageData(imgData.value, rectX.value + 20, rectY.value - 20)
+    }
+  }
+}
+
+const onClick = (e: MouseEvent) => {
+  // キャンバスの左上端の座標を取得
+  const offsetX = canvas.value.getBoundingClientRect().left;
+  const offsetY = canvas.value.getBoundingClientRect().top;
+
+  // マウスが押された座標を取得
+  lastClick.value.x = e.clientX - offsetX
+  lastClick.value.y = e.clientY - offsetY
 }
 
 const onMouseUp = (e: MouseEvent) => {
