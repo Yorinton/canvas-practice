@@ -1,6 +1,6 @@
 <template>
   <div ref="parent">
-    <canvas ref="canvas" id="tutorial" @click.stop="putRect" @dblclick.stop="addInput"></canvas>
+    <canvas ref="canvas" id="tutorial" @dblclick.stop="addInput" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp"></canvas>
   </div>
 </template>
 <script setup lang="ts">
@@ -23,13 +23,6 @@ const resizeCanvas = () => {
   canvas.value.height = window.innerHeight * window.devicePixelRatio
 }
 
-const putRect = (e: MouseEvent) => {
-  const full = document.getElementById('tutorial') as HTMLCanvasElement
-  const ctx = full.getContext('2d') as CanvasRenderingContext2D
-  ctx.fillStyle = "rgb(255,255,0)"
-  ctx.fillRect(e.clientX, e.clientY, 200, 200)
-}
-
 const addInput = (e: MouseEvent) => {
   const input = document.createElement('input')
   input.id = 'input'
@@ -39,43 +32,75 @@ const addInput = (e: MouseEvent) => {
   document.body.appendChild(input)
 }
 
-
 onMounted(() => {
   resizeCanvas()
   initCanvasContent()
 })
 
+const rectWidth = ref(200)
+const rectHeight = ref(200)
+const rectX = ref(0)
+const rectY = ref(0)
+const dragging = ref(false)
+const relX = ref(0)
+const relY = ref(0)
+const ctx = ref() as Ref<CanvasRenderingContext2D>
+
 const initCanvasContent = () => {
   const full = document.getElementById('tutorial') as HTMLCanvasElement
-  const ctx = full.getContext('2d') as CanvasRenderingContext2D
-  ctx.fillStyle = "rgb(200,0,0)"
-  ctx.fillRect(10, 10, 50, 50)
-  ctx.fillStyle = "rgba(0, 0, 200, 0.5)"
-  ctx.fillRect(30, 30, 50, 50)
-  ctx.clearRect(35, 35, 30, 30)
-  ctx.strokeRect(37, 37, 25, 25)
+  ctx.value = full.getContext('2d') as CanvasRenderingContext2D
+  ctx.value.fillStyle = "rgb(255,255,0)"
 
-  ctx.fillStyle = "rgba(200,0,0, 0.5)"
-  ctx.strokeStyle = "rgba(1, 155, 155)"
-  ctx.beginPath()
-  ctx.moveTo(75, 50)
-  ctx.lineTo(100, 75)
-  ctx.lineTo(100, 25)
-  ctx.closePath()
-  ctx.stroke()
-  ctx.fill()
+  rectX.value = canvas.value.width / 2 - rectWidth.value / 2
+  rectY.value = canvas.value.height / 2 - rectHeight.value / 2
 
-  ctx.beginPath()
-  ctx.arc(100, 100, 50, 0, Math.PI * 2, true)
-  ctx.moveTo(135, 100) // 始点を移動する
-  // 中心の位置(x, y)、半径(radius)、start/endAngle(開始/終了点のx軸からの正方向のラジアン角度), anticlockwise(反時計回りか)
-  // radians = (Math.PI/180)*degrees
-  ctx.arc(100, 100, 35, 0, Math.PI, false)
-  ctx.moveTo(90, 90)
-  ctx.arc(85, 90, 5, 0, Math.PI * 2, true)
-  ctx.moveTo(120, 90)
-  ctx.arc(115, 90, 5, 0, Math.PI * 2, true)
-  ctx.stroke()
+  // 影付きの付箋追加
+  ctx.value.shadowColor = "rgb(0,0,0,0.2)"
+  ctx.value.shadowOffsetX = 3
+  ctx.value.shadowOffsetY = 3
+  ctx.value.shadowBlur = 10
+  ctx.value.fillRect(rectX.value, rectY.value, rectWidth.value, rectHeight.value)
+}
+
+const onMouseDown = (e: MouseEvent) => {
+  // キャンバスの左上端の座標を取得
+  const offsetX = canvas.value.getBoundingClientRect().left;
+  const offsetY = canvas.value.getBoundingClientRect().top;
+
+  // マウスが押された座標を取得
+  const x = e.clientX - offsetX;
+  const y = e.clientY - offsetY;
+
+  // オブジェクト上の座標かどうかを判定
+  if (rectX.value < x && (rectX.value + rectWidth.value) > x && rectY.value < y && (rectY.value + rectHeight.value) > y) {
+    dragging.value = true; // ドラッグ開始
+    relX.value = rectX.value - x;
+    relY.value = rectY.value - y;
+  } else {
+    dragging.value = false
+  }
+}
+
+const onMouseMove = (e: MouseEvent) => {
+  // キャンバスの左上端の座標を取得
+  const offsetX = canvas.value.getBoundingClientRect().left;
+  const offsetY = canvas.value.getBoundingClientRect().top;
+  
+  // マウスが押された座標を取得
+  const x = e.clientX - offsetX;
+  const y = e.clientY - offsetY;
+
+  if(dragging.value) {
+    // 付箋をドラッグ
+    rectX.value = x + relX.value
+    rectY.value = y + relY.value
+    ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height); 
+    ctx.value.fillRect(rectX.value, rectY.value, rectWidth.value, rectHeight.value)
+  }
+}
+
+const onMouseUp = (e: MouseEvent) => {
+  dragging.value = false
 }
 
 </script>
