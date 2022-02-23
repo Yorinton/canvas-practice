@@ -1,6 +1,6 @@
 <template>
   <div ref="parent">
-    <canvas ref="canvas" id="tutorial" @dblclick.stop="addInput" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @keydown="onKeyDown" tabindex="0" @click="onClick"></canvas>
+    <canvas ref="canvas" id="tutorial" @dblclick.stop="addInput" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" tabindex="0" @click="onClick"></canvas>
   </div>
 </template>
 <script setup lang="ts">
@@ -42,6 +42,8 @@ const rectHeight = ref(200)
 const rectX = ref(0)
 const rectY = ref(0)
 const dragging = ref(false)
+// clickイベントなどでドラッグ直後のイベントか純粋なクリックイベントか判定する
+const ImmediatelyAfterDrag = ref(false)
 const relX = ref(0)
 const relY = ref(0)
 const ctx = ref() as Ref<CanvasRenderingContext2D>
@@ -100,22 +102,26 @@ const onMouseMove = (e: MouseEvent) => {
 
     ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height);
     ctx.value.fillRect(rectX.value, rectY.value, rectWidth.value, rectHeight.value)
+    if (ctx.value.strokeStyle !== '#000000') {
+      ctx.value.strokeRect(rectX.value, rectY.value, rectWidth.value, rectHeight.value)
+    }
+    ImmediatelyAfterDrag.value = true
   }
 }
 
-const imgData = ref() as Ref<ImageData>
-const onKeyDown = async (e: KeyboardEvent) => {
-  if (e.metaKey && e.key === 'c') {
-    imgData.value = ctx.value.getImageData(rectX.value, rectY.value, rectWidth.value + 3, rectHeight.value + 3);
-  }
-  if (e.metaKey && e.key === 'v') {
-    if (lastClick.value.x > 0 || lastClick.value.y > 0) {
-      ctx.value.putImageData(imgData.value, lastClick.value.x, lastClick.value.y)
-    } else {
-      ctx.value.putImageData(imgData.value, rectX.value + 20, rectY.value - 20)
-    }
-  }
-}
+// const imgData = ref() as Ref<ImageData>
+// const onKeyDown = async (e: KeyboardEvent) => {
+//   if (e.metaKey && e.key === 'c') {
+//     imgData.value = ctx.value.getImageData(rectX.value, rectY.value, rectWidth.value + 3, rectHeight.value + 3);
+//   }
+//   if (e.metaKey && e.key === 'v') {
+//     if (lastClick.value.x > 0 || lastClick.value.y > 0) {
+//       ctx.value.putImageData(imgData.value, lastClick.value.x, lastClick.value.y)
+//     } else {
+//       ctx.value.putImageData(imgData.value, rectX.value + 20, rectY.value - 20)
+//     }
+//   }
+// }
 
 const onClick = (e: MouseEvent) => {
   // キャンバスの左上端の座標を取得
@@ -125,6 +131,19 @@ const onClick = (e: MouseEvent) => {
   // マウスが押された座標を取得
   lastClick.value.x = e.clientX - offsetX
   lastClick.value.y = e.clientY - offsetY
+
+  // クリックしたら付箋に線をつける
+  if (rectX.value < lastClick.value.x && (rectX.value + rectWidth.value) > lastClick.value.x && rectY.value < lastClick.value.y && (rectY.value + rectHeight.value) > lastClick.value.y) {
+    if (ctx.value.strokeStyle === '#000000' && !ImmediatelyAfterDrag.value) {
+      ctx.value.strokeStyle = "rgba(255,165,0)"
+      ctx.value.strokeRect(rectX.value, rectY.value, rectWidth.value, rectHeight.value)
+    }
+  } else {
+    ctx.value.strokeStyle = "#000000"
+    ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height);
+    ctx.value.fillRect(rectX.value, rectY.value, rectWidth.value, rectHeight.value)
+  }
+  ImmediatelyAfterDrag.value = false
 }
 
 const onMouseUp = (e: MouseEvent) => {
