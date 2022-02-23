@@ -19,8 +19,8 @@ window.addEventListener('resize', () => {
 const resizeCanvas = () => {
   canvas.value.style.width = window.innerWidth + 'px'
   canvas.value.style.height = window.innerHeight + 'px'
-  canvas.value.width = window.innerWidth * window.devicePixelRatio
-  canvas.value.height = window.innerHeight * window.devicePixelRatio
+  canvas.value.width = window.innerWidth
+  canvas.value.height = window.innerHeight
 }
 
 const addInput = (e: MouseEvent) => {
@@ -98,7 +98,7 @@ const onMouseMove = (e: MouseEvent) => {
     rectX.value = x + relX.value
     rectY.value = y + relY.value
 
-    ctx.value.clearRect(rectXBefore, rectYBefore - 1, rectWidth.value + 10, rectHeight.value + 10);
+    ctx.value.clearRect(0, 0, canvas.value.width, canvas.value.height);
     ctx.value.fillRect(rectX.value, rectY.value, rectWidth.value, rectHeight.value)
   }
 }
